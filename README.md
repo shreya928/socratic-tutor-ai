@@ -10,7 +10,7 @@
 
 ## 🌐 Live Demo
 
-👉 **[shreya928.github.io/socratic-tutor-ai](https://shreya928.github.io/socratic-tutor-ai)**
+👉 **[shreya928.github.io/socratic-tutor-ai](https://shreya928.github.io/socratic-tutor-ai/index.html)**
 
 ---
 
