@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Socratic Tutor</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/tabler-icons.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #f5f5f3;
+      --bg-tertiary: #eeede8;
+      --text: #1a1a18;
+      --text-secondary: #6b6b67;
+      --border: rgba(0,0,0,0.12);
+      --border-hover: rgba(0,0,0,0.28);
+      --purple-50: #EEEDFE;
+      --purple-400: #7F77DD;
+      --purple-800: #3C3489;
+      --purple-900: #26215C;
+      --teal: #1D9E75;
+      --amber: #BA7517;
+      --coral: #D85A30;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1e1e1c;
+        --bg-secondary: #2a2a27;
+        --bg-tertiary: #333330;
+        --text: #f0efe8;
+        --text-secondary: #9a9993;
+        --border: rgba(255,255,255,0.12);
+        --border-hover: rgba(255,255,255,0.28);
+        --purple-50: #26215C;
+        --purple-400: #9F99E8;
+        --purple-800: #CECBF6;
+        --purple-900: #EEEDFE;
+      }
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-tertiary);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 680px;
+      background: var(--bg);
+      border-radius: 16px;
+      border: 0.5px solid var(--border);
+      padding: 2rem;
+      box-shadow: 0 2px 24px rgba(0,0,0,0.06);
+    }
+
+    .header { margin-bottom: 2rem; }
+    .header h1 {
+      font-size: 22px; font-weight: 500; color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .header h1 i { color: var(--purple-400); font-size: 20px; }
+    .header p { font-size: 14px; color: var(--text-secondary); margin-top: 5px; }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── Topic screen ── */
+    .screen-label { font-size: 14px; color: var(--text-secondary); margin-bottom: 1rem; }
+
+    .topics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .topic-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .topic-card:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
+    .topic-card.selected { border: 2px solid var(--purple-400); background: var(--purple-50); }
+    .topic-card .t-icon { font-size: 20px; color: var(--purple-400); margin-bottom: 8px; }
+    .topic-card .t-name { font-size: 14px; font-weight: 500; color: var(--text); }
+    .topic-card .t-desc { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+
+    .custom-row { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+    .custom-row input {
+      flex: 1; height: 40px; padding: 0 12px;
+      font-size: 14px; font-family: 'DM Sans', sans-serif;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg); color: var(--text);
+      outline: none; transition: border-color 0.15s;
+    }
+    .custom-row input:focus { border-color: var(--purple-400); }
+    .custom-row input::placeholder { color: var(--text-secondary); }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      background: var(--purple-400); color: #fff; border: none;
+      padding: 10px 20px; border-radius: var(--radius-md);
+      font-size: 14px; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-primary:disabled { opacity: 0.4; cursor: default; }
+
+    .btn-ghost {
+      background: transparent; color: var(--text);
+      border: 0.5px solid var(--border);
+      padding: 10px 20px; border-radius: var(--radius-md);
+      font-size: 14px; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .btn-ghost:hover { background: var(--bg-secondary); }
+
+    /* ── Session screen ── */
+    .session-meta {
+      display: flex; align-items: center; gap: 12px;
+      padding: 0.75rem 1rem;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      margin-bottom: 1.5rem;
+    }
+    .topic-badge {
+      background: var(--purple-50); color: var(--purple-800);
+      font-size: 12px; padding: 3px 10px;
+      border-radius: var(--radius-md); font-weight: 500;
+      white-space: nowrap;
+    }
+    .mastery-bar-wrap { flex: 1; min-width: 0; }
+    .mastery-label {
+      font-size: 12px; color: var(--text-secondary);
+      margin-bottom: 4px; display: flex; justify-content: space-between;
+    }
+    .mastery-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .mastery-fill { height: 100%; background: var(--purple-400); border-radius: 99px; transition: width 0.6s ease; }
+    .q-counter { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+
+    .chat-area { display: flex; flex-direction: column; gap: 12px; margin-bottom: 1rem; min-height: 240px; }
+
+    .msg { display: flex; gap: 10px; align-items: flex-start; }
+    .msg.user { flex-direction: row-reverse; }
+
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 500; flex-shrink: 0;
+    }
+    .avatar.soc { background: var(--purple-50); color: var(--purple-800); }
+    .avatar.usr { background: var(--bg-secondary); color: var(--text-secondary); border: 0.5px solid var(--border); }
+
+    .bubble {
+      max-width: 82%; padding: 10px 14px;
+      border-radius: var(--radius-lg);
+      font-size: 14px; line-height: 1.6; color: var(--text);
+    }
+    .msg.soc .bubble {
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border);
+      border-top-left-radius: 4px;
+    }
+    .msg.user .bubble {
+      background: var(--purple-50);
+      color: var(--purple-900);
+      border-top-right-radius: 4px;
+    }
+
+    .thinking { display: flex; align-items: center; gap: 6px; padding: 10px 14px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--purple-400); animation: bounce 1.2s infinite; }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+    .input-row { display: flex; gap: 8px; }
+    .input-row textarea {
+      flex: 1; resize: none; height: 44px; padding: 10px 12px;
+      font-size: 14px; font-family: 'DM Sans', sans-serif;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border);
+      background: var(--bg); color: var(--text);
+      line-height: 1.4; outline: none; transition: border-color 0.15s;
+    }
+    .input-row textarea:focus { border-color: var(--purple-400); }
+    .input-row textarea::placeholder { color: var(--text-secondary); }
+
+    /* ── Results screen ── */
+    .result-card {
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .score-circle {
+      width: 80px; height: 80px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 500;
+      margin: 0 auto 1rem;
+    }
+    .result-title { text-align: center; font-size: 18px; font-weight: 500; margin-bottom: 4px; }
+    .result-subtitle { text-align: center; font-size: 13px; color: var(--text-secondary); margin-bottom: 1.5rem; }
+    .insight-item { display: flex; gap: 8px; margin-bottom: 10px; font-size: 14px; color: var(--text); }
+    .insight-item i { margin-top: 2px; flex-shrink: 0; color: var(--purple-400); font-size: 16px; }
+
+    .result-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* ── API key notice ── */
+    .api-notice {
+      background: #FAEEDA; color: #633806;
+      border: 0.5px solid #EF9F27;
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+    .api-notice a { color: #633806; font-weight: 500; }
+    .api-key-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+    .api-key-row input {
+      flex: 1; height: 40px; padding: 0 12px;
+      font-size: 13px; font-family: 'DM Sans', sans-serif;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg); color: var(--text);
+      outline: none; transition: border-color 0.15s;
+    }
+    .api-key-row input:focus { border-color: var(--purple-400); }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1><i class="ti ti-school"></i> Socratic tutor</h1>
+    <p>Never gives you the answer. Only asks the right questions.</p>
+  </div>
+
+  <!-- API Key notice (shown if no key set) -->
+  <div class="api-notice" id="api-notice">
+    <strong>API key required.</strong> Get a free key at
+    <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>
+    (100% free, no credit card). Paste it below — stays only in your browser.
+  </div>
+  <div class="api-key-row" id="api-key-row" style="display:none;">
+    <input type="password" id="api-key-input" placeholder="gsk_..." />
+    <button class="btn-ghost" onclick="saveKey()">Save key</button>
+  </div>
+
+  <!-- Screen 1: Topic -->
+  <div class="screen active" id="screen-topic">
+    <p class="screen-label">What do you want to deeply understand today?</p>
+    <div class="topics-grid">
+      <div class="topic-card" data-topic="Binary Search" onclick="selectTopic(this)">
+        <div class="t-icon"><i class="ti ti-binary-tree"></i></div>
+        <div class="t-name">Binary search</div>
+        <div class="t-desc">DSA fundamentals</div>
+      </div>
+      <div class="topic-card" data-topic="How the internet works" onclick="selectTopic(this)">
+        <div class="t-icon"><i class="ti ti-world"></i></div>
+        <div class="t-name">How the internet works</div>
+        <div class="t-desc">Networking basics</div>
+      </div>
+      <div class="topic-card" data-topic="Object-Oriented Programming" onclick="selectTopic(this)">
+        <div class="t-icon"><i class="ti ti-cube"></i></div>
+        <div class="t-name">OOP concepts</div>
+        <div class="t-desc">Programming paradigms</div>
+      </div>
+      <div class="topic-card" data-topic="Machine Learning basics" onclick="selectTopic(this)">
+        <div class="t-icon"><i class="ti ti-brain"></i></div>
+        <div class="t-name">Machine learning</div>
+        <div class="t-desc">AI foundations</div>
+      </div>
+      <div class="topic-card" data-topic="SQL and databases" onclick="selectTopic(this)">
+        <div class="t-icon"><i class="ti ti-database"></i></div>
+        <div class="t-name">SQL & databases</div>
+        <div class="t-desc">Data fundamentals</div>
+      </div>
+      <div class="topic-card" data-topic="REST APIs" onclick="selectTopic(this)">
+        <div class="t-icon"><i class="ti ti-api"></i></div>
+        <div class="t-name">REST APIs</div>
+        <div class="t-desc">Web architecture</div>
+      </div>
+    </div>
+
+    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:8px;">Or type your own topic:</p>
+    <div class="custom-row">
+      <input type="text" id="custom-topic" placeholder="e.g. recursion, Big O notation, TCP/IP..." />
+      <button class="btn-ghost" onclick="useCustomTopic()">Use this</button>
+    </div>
+    <button class="btn-primary" id="start-btn" disabled onclick="startSession()">Start session →</button>
+  </div>
+
+  <!-- Screen 2: Session -->
+  <div class="screen" id="screen-session">
+    <div class="session-meta">
+      <span class="topic-badge" id="session-topic-badge">Topic</span>
+      <div class="mastery-bar-wrap">
+        <div class="mastery-label"><span>understanding</span><span id="mastery-pct">0%</span></div>
+        <div class="mastery-bar"><div class="mastery-fill" id="mastery-fill" style="width:0%"></div></div>
+      </div>
+      <span class="q-counter" id="q-counter">Q 0 / 8</span>
+    </div>
+
+    <div class="chat-area" id="chat-area"></div>
+
+    <div class="input-row" id="input-row">
+      <textarea id="answer-input" placeholder="Your answer... (Enter to send, Shift+Enter for new line)" onkeydown="handleKey(event)"></textarea>
+      <button class="btn-primary" id="send-btn" onclick="sendAnswer()">Send</button>
+    </div>
+  </div>
+
+  <!-- Screen 3: Results -->
+  <div class="screen" id="screen-results">
+    <div class="result-card">
+      <div class="score-circle" id="score-circle"></div>
+      <p class="result-title" id="result-title"></p>
+      <p class="result-subtitle" id="result-subtitle"></p>
+      <div id="insights"></div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-primary" onclick="restart()">Try another topic →</button>
+      <button class="btn-ghost" onclick="retryTopic()">Retry same topic</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Configuration ──────────────────────────────────────────
+  // Option 1: Hardcode your API key here (for local use only — don't commit to GitHub!)
+  // Option 2: Leave empty and the UI will ask for it
+  const HARDCODED_API_KEY = '';
+
+  // ── State ──────────────────────────────────────────────────
+  let selectedTopic = '';
+  let questionCount = 0;
+  const maxQuestions = 8;
+  let masteryScore = 0;
+  let conversationHistory = [];
+  let isLoading = false;
+  let currentTopicForRetry = '';
+
+  // ── API Key Management ─────────────────────────────────────
+  function getApiKey() {
+    return HARDCODED_API_KEY || localStorage.getItem('groq_api_key') || '';
+  }
+
+  function saveKey() {
+    const val = document.getElementById('api-key-input').value.trim();
+    if (!val) return;
+    localStorage.setItem('groq_api_key', val);
+    document.getElementById('api-key-row').style.display = 'none';
+    document.getElementById('api-notice').style.display = 'none';
+    alert('API key saved!');
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (!getApiKey()) {
+      document.getElementById('api-notice').style.display = 'block';
+      document.getElementById('api-key-row').style.display = 'flex';
+    }
+  });
+
+  // ── Topic Selection ────────────────────────────────────────
+  function selectTopic(el) {
+    document.querySelectorAll('.topic-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedTopic = el.dataset.topic;
+    document.getElementById('custom-topic').value = '';
+    document.getElementById('start-btn').disabled = false;
+  }
+
+  function useCustomTopic() {
+    const val = document.getElementById('custom-topic').value.trim();
+    if (!val) return;
+    selectedTopic = val;
+    document.querySelectorAll('.topic-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('start-btn').disabled = false;
+  }
+
+  document.getElementById('custom-topic').addEventListener('input', function () {
+    if (this.value.trim()) {
+      document.querySelectorAll('.topic-card').forEach(c => c.classList.remove('selected'));
+      selectedTopic = this.value.trim();
+      document.getElementById('start-btn').disabled = false;
+    }
+  });
+
+  // ── Screen Management ──────────────────────────────────────
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ── Session ────────────────────────────────────────────────
+  async function startSession() {
+    if (!getApiKey()) {
+      alert('Please enter your Anthropic API key first.');
+      return;
+    }
+    currentTopicForRetry = selectedTopic;
+    questionCount = 0;
+    masteryScore = 0;
+    conversationHistory = [];
+    document.getElementById('chat-area').innerHTML = '';
+    document.getElementById('input-row').style.display = 'flex';
+    document.getElementById('session-topic-badge').textContent = selectedTopic;
+    updateMastery(0);
+    updateCounter();
+    showScreen('screen-session');
+    await askNextQuestion(true);
+  }
+
+  function updateMastery(val) {
+    masteryScore = Math.min(100, Math.max(0, val));
+    document.getElementById('mastery-fill').style.width = masteryScore + '%';
+    document.getElementById('mastery-pct').textContent = Math.round(masteryScore) + '%';
+  }
+
+  function updateCounter() {
+    document.getElementById('q-counter').textContent = 'Q ' + questionCount + ' / ' + maxQuestions;
+  }
+
+  // ── Chat UI ────────────────────────────────────────────────
+  function addMessage(role, text) {
+    const chat = document.getElementById('chat-area');
+    const msg = document.createElement('div');
+    msg.className = 'msg ' + (role === 'user' ? 'user' : 'soc');
+    const avatar = role === 'user'
+      ? `<div class="avatar usr"><i class="ti ti-user" style="font-size:14px;"></i></div>`
+      : `<div class="avatar soc">S</div>`;
+    msg.innerHTML = `${avatar}<div class="bubble">${text}</div>`;
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function showThinking() {
+    const chat = document.getElementById('chat-area');
+    const t = document.createElement('div');
+    t.className = 'msg soc'; t.id = 'thinking-msg';
+    t.innerHTML = `<div class="avatar soc">S</div><div class="bubble thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+    chat.appendChild(t);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function removeThinking() {
+    const t = document.getElementById('thinking-msg');
+    if (t) t.remove();
+  }
+
+  function setInputEnabled(val) {
+    document.getElementById('answer-input').disabled = !val;
+    document.getElementById('send-btn').disabled = !val;
+    isLoading = !val;
+  }
+
+  // ── Groq API Call ─────────────────────────────────────────
+  async function callClaude(systemPrompt, messages) {
+    const apiKey = getApiKey();
+    const url = 'https://api.groq.com/openai/v1/chat/completions';
+
+    // Convert to OpenAI format (which Groq uses)
+    const groqMessages = [
+      { role: 'system', content: systemPrompt },
+      ...messages
+    ];
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'mixtral-8x7b-32768',
+        messages: groqMessages,
+        max_tokens: 1000,
+        temperature: 0.7
+      })
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || 'Groq API error');
+    }
+    const data = await response.json();
+    // Normalize response to match expected format
+    const text = data.choices?.[0]?.message?.content || '';
+    return { content: [{ text }] };
+  }
+
+  // ── Question Logic ─────────────────────────────────────────
+  async function askNextQuestion(isFirst = false) {
+    setInputEnabled(false);
+    showThinking();
+
+    const systemPrompt = `You are a Socratic tutor teaching "${selectedTopic}". You NEVER directly explain or give answers. You ONLY ask probing questions that guide the student to discover the answer themselves.
+
+Rules:
+- Ask ONE clear question at a time
+- Build on the student's previous answers
+- Start simple, gradually go deeper
+- If the answer is wrong or incomplete, ask a clarifying question (do not correct directly)
+- If the answer is good, acknowledge briefly then ask a deeper follow-up
+- Keep questions concise (1-3 sentences max)
+- At the end of your message, always append a JSON object like: {"mastery": 45} where the number (0-100) reflects the student's demonstrated understanding so far
+- This is question ${questionCount + 1} of ${maxQuestions}
+${isFirst ? '- This is the very first question. Start with a thought-provoking opener.' : ''}
+${questionCount >= maxQuestions - 1 ? '- This is the last question. After this, give a brief 2-sentence closing summary of what the student discovered.' : ''}`;
+
+    const messages = isFirst
+      ? []
+      : conversationHistory;
+
+    try {
+      const data = await callClaude(systemPrompt, messages);
+      const raw = data.content?.[0]?.text || '';
+
+      const jsonMatch = raw.match(/\{"mastery":\s*(\d+)\}/);
+      if (jsonMatch) updateMastery(parseInt(jsonMatch[1]));
+      const cleanText = raw.replace(/\{"mastery":\s*\d+\}/g, '').trim();
+
+      removeThinking();
+      addMessage('soc', cleanText);
+      conversationHistory.push({ role: 'assistant', content: raw });
+
+      questionCount++;
+      updateCounter();
+
+      if (questionCount > maxQuestions) {
+        setInputEnabled(false);
+        document.getElementById('input-row').style.display = 'none';
+        setTimeout(() => showResults(), 1200);
+      } else {
+        setInputEnabled(true);
+        document.getElementById('answer-input').focus();
+      }
+    } catch (e) {
+      removeThinking();
+      addMessage('soc', '⚠️ Error: ' + e.message + '. Please check your API key.');
+      setInputEnabled(true);
+    }
+  }
+
+  async function sendAnswer() {
+    if (isLoading) return;
+    const input = document.getElementById('answer-input');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    addMessage('user', text);
+    conversationHistory.push({ role: 'user', content: text });
+
+    if (questionCount >= maxQuestions) {
+      setInputEnabled(false);
+      document.getElementById('input-row').style.display = 'none';
+      await getClosingRemarks();
+      setTimeout(() => showResults(), 1500);
+    } else {
+      await askNextQuestion(false);
+    }
+  }
+
+  async function getClosingRemarks() {
+    showThinking();
+    const systemPrompt = `You are a Socratic tutor wrapping up a session on "${selectedTopic}". Write a warm 2-sentence closing that acknowledges what the student discovered through their own reasoning. Include: {"mastery": SCORE} where SCORE is 0-100 based on the overall session quality.`;
+    try {
+      const data = await callClaude(systemPrompt, [
+        ...conversationHistory,
+        { role: 'user', content: 'Session complete. Please give closing remarks.' }
+      ]);
+      const raw = data.content?.[0]?.text || '';
+      const jsonMatch = raw.match(/\{"mastery":\s*(\d+)\}/);
+      if (jsonMatch) updateMastery(parseInt(jsonMatch[1]));
+      const clean = raw.replace(/\{"mastery":\s*\d+\}/g, '').trim();
+      removeThinking();
+      addMessage('soc', clean);
+    } catch (e) {
+      removeThinking();
+    }
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAnswer(); }
+  }
+
+  // ── Results ────────────────────────────────────────────────
+  function showResults() {
+    showScreen('screen-results');
+    const score = Math.round(masteryScore);
+    let color, label, subtitle;
+    if (score >= 75) { color = '#1D9E75'; label = 'Deep understanding'; subtitle = 'You reasoned your way to genuine insight.'; }
+    else if (score >= 50) { color = '#7F77DD'; label = 'Solid grasp'; subtitle = 'You got the core — keep pushing deeper.'; }
+    else if (score >= 25) { color = '#BA7517'; label = 'Building foundations'; subtitle = 'Good start — another session will solidify this.'; }
+    else { color = '#D85A30'; label = 'Early exploration'; subtitle = 'The first session is always the hardest. Try again!'; }
+
+    const circle = document.getElementById('score-circle');
+    circle.style.background = color + '22';
+    circle.style.color = color;
+    circle.textContent = score + '%';
+
+    document.getElementById('result-title').textContent = label;
+    document.getElementById('result-subtitle').textContent = subtitle;
+
+    const insightsEl = document.getElementById('insights');
+    insightsEl.innerHTML = [
+      { icon: 'ti-message-dots', text: `Answered ${Math.max(0, questionCount - 1)} Socratic questions on <strong>${selectedTopic}</strong>` },
+      { icon: 'ti-brain', text: score >= 60 ? 'Showed strong reasoning and depth in answers' : 'Engaged thoughtfully with every question' },
+      { icon: 'ti-trending-up', text: 'Understanding was built through your own thinking — not memorization' }
+    ].map(i => `<div class="insight-item"><i class="ti ${i.icon}"></i><span>${i.text}</span></div>`).join('');
+  }
+
+  function restart() {
+    selectedTopic = '';
+    document.querySelectorAll('.topic-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('custom-topic').value = '';
+    document.getElementById('start-btn').disabled = true;
+    document.getElementById('input-row').style.display = 'flex';
+    showScreen('screen-topic');
+  }
+
+  function retryTopic() {
+    selectedTopic = currentTopicForRetry;
+    document.getElementById('input-row').style.display = 'flex';
+    startSession();
+  }
+</script>
+</body>
+</html>
