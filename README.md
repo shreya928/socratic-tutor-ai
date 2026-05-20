@@ -1,8 +1,8 @@
 # 🎭 AI Socratic Tutor
 
-> An AI-powered learning app that **never gives you the answer** — it only asks the right questions to guide you to discover it yourself.
+> An AI-powered learning app that **never gives answers directly** — it asks thoughtful questions that guide learners to discover concepts on their own.
 
-![Made with Claude AI](https://img.shields.io/badge/Powered%20by-Claude%20AI-7F77DD?style=flat-square)
+![Powered by Groq](https://img.shields.io/badge/Powered%20by-Groq-7F77DD?style=flat-square)
 ![HTML CSS JS](https://img.shields.io/badge/Built%20with-HTML%20%7C%20CSS%20%7C%20JS-orange?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
@@ -10,133 +10,176 @@
 
 ## 🌐 Live Demo
 
-👉 **[shreya928.github.io/socratic-tutor-ai](https://shreya928.github.io/socratic-tutor-ai/index.html)**
+👉 **https://shreya928.github.io/socratic-tutor-ai/**
 
 ---
 
 ## 💡 What is Socratic Learning?
 
-The Socratic method is a form of teaching where the teacher **never explains directly** — instead, they ask probing questions that force the student to think, reason, and arrive at the answer themselves.
+The Socratic method is a learning technique where instead of giving direct explanations, questions are used to encourage reasoning and self-discovery.
 
-Studies show this leads to **deeper understanding and longer retention** compared to passive learning.
-
-This app applies that method using AI.
+This project applies that idea using AI by creating guided conversations that help users understand concepts more deeply rather than memorizing answers.
 
 ---
 
 ## ✨ Features
 
-- 🧠 **AI-powered questioning** — Claude AI generates adaptive Socratic questions based on your answers
-- 📈 **Live mastery tracking** — understanding score updates in real-time as you progress
-- 🎯 **8-question deep-dive sessions** — gradually increases in depth and complexity
-- 📚 **6 preset topics** — Binary Search, OOP, Machine Learning, SQL, REST APIs, Networking
-- ✏️ **Custom topic input** — learn anything you want
-- 🏆 **Session results** — mastery score + personalized insights at the end
-- 🌙 **Dark mode support** — auto-detects system theme
+- 🧠 AI-powered Socratic questioning using Groq LLMs
+- 📈 Real-time understanding/mastery tracking
+- 🎯 Guided 8-question learning sessions
+- 📚 Preset learning topics:
+  - Binary Search
+  - OOP Concepts
+  - Machine Learning
+  - SQL & Databases
+  - REST APIs
+  - Networking
+- ✏️ Custom topic support
+- 🏆 Session summary with insights and score
+- 🌙 Automatic dark mode support
+- ⚡ No backend required
 
 ---
 
 ## 🛠️ Tech Stack
 
 | Technology | Usage |
-|---|---|
-| HTML / CSS / JavaScript | Frontend (no frameworks) |
-| Claude API (Anthropic) | AI question generation |
-| GitHub Pages | Free hosting & deployment |
+|------------|--------|
+| HTML | Structure |
+| CSS | Styling |
+| JavaScript | Logic & state management |
+| Groq API | AI response generation |
+| Llama 3.3 | Language model |
+| GitHub Pages | Deployment |
 
 ---
 
-## 🚀 How to Run Locally
+## 🚀 Run Locally
 
-1. Clone the repo
+Clone the repository:
+
 ```bash
 git clone https://github.com/shreya928/socratic-tutor-ai.git
 cd socratic-tutor-ai
 ```
 
-2. Open `index.html` directly in your browser — no server needed!
+Open:
 
-3. Get a free API key from [console.anthropic.com](https://console.anthropic.com)
+```bash
+index.html
+```
 
-4. Paste your key in the input box on the app and click **Save key**
-
-5. Pick a topic and start learning! 🎉
+No installation or server setup required.
 
 ---
 
 ## 🔑 API Key Setup
 
-This app uses the **Anthropic Claude API** to generate questions.
+This project uses the Groq API.
 
-- Get a free key at [console.anthropic.com](https://console.anthropic.com)
-- New accounts receive free credits (no credit card required)
-- Your key is stored **only in your browser** — never sent to any external server
+Steps:
+
+1. Create a free API key from:
+
+https://console.groq.com/keys
+
+2. Open the application
+
+3. Paste your API key
+
+4. Click **Save Key**
+
+The key is stored only in your browser using local storage.
 
 ---
 
 ## 📸 Screenshots
 
-> *(Add a screenshot of your app here)*
-> Tip: Press `Windows + Shift + S` to take a screenshot and drag it into this file on GitHub
+Add screenshots here:
+
+### Home Page
+
+<img width="900" alt="home" src="YOUR_IMAGE_LINK">
+
+### Learning Session
+
+<img width="900" alt="session" src="YOUR_IMAGE_LINK">
+
+### Result Screen
+
+<img width="900" alt="result" src="YOUR_IMAGE_LINK">
 
 ---
 
 ## 🧠 How It Works
 
-```
-User picks a topic
-       ↓
-Claude AI asks an opening question
-       ↓
-User types their answer
-       ↓
-Claude analyzes the answer and asks a deeper follow-up
-       ↓
-Repeat for 8 questions (getting progressively deeper)
-       ↓
-Final mastery score + insights shown
+```text
+Choose topic
+      ↓
+AI asks an opening question
+      ↓
+User submits answer
+      ↓
+AI evaluates context
+      ↓
+AI asks deeper follow-up questions
+      ↓
+Mastery score updates
+      ↓
+Final insights + score shown
 ```
 
 ---
 
 ## 📁 Project Structure
 
-```
+```text
 socratic-tutor-ai/
 │
-└── index.html        # Complete app — HTML + CSS + JS in one file
+└── index.html
 ```
+
+Single-file architecture containing:
+
+- HTML
+- CSS
+- JavaScript
+- API integration
 
 ---
 
-## 🎯 What I Learned Building This
+## 🎯 What I Learned
 
-- Integrating the **Anthropic Claude API** with multi-turn conversation history
-- Designing **adaptive AI prompts** that change behavior based on question number
-- Extracting **structured JSON data** (mastery score) from AI responses
-- Building a **stateful single-page app** without any frameworks
-- Deploying a frontend project with **GitHub Pages**
+- Integrating Groq API into frontend applications
+- Managing multi-turn conversation context
+- Creating adaptive prompt engineering workflows
+- Extracting structured data from LLM responses
+- Building a complete SPA without frameworks
+- Deploying projects with GitHub Pages
 
 ---
 
 ## 🔮 Future Improvements
 
-- [ ] Voice input support (Web Speech API)
-- [ ] Topic difficulty levels (beginner / intermediate / advanced)
-- [ ] Session history saved across visits
-- [ ] Backend proxy so visitors don't need their own API key
-- [ ] Leaderboard for mastery scores
+- [ ] Voice input support
+- [ ] Difficulty levels
+- [ ] Session history
+- [ ] Leaderboards
+- [ ] User authentication
+- [ ] Backend proxy for API protection
 
 ---
 
 ## 📄 License
 
-MIT License — feel free to use, modify, and share.
+MIT License
 
 ---
 
 ## 👩‍💻 Author
 
-**Shreya** — [github.com/shreya928](https://github.com/shreya928)
+**Shreya**
 
-*Built as part of my AI projects portfolio*
+GitHub: https://github.com/shreya928
+
+Built as part of my AI project portfolio 🚀
